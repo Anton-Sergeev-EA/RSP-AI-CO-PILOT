@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSP AI Co-Pilot — цифровой двойник парка агрегатов</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">RSP</div>
+    <div>
+      <div class="brand-title">RSP AI Co-Pilot <span class="brand-en">— Rakurs SCADA/HMI</span></div>
+      <div class="brand-sub">Предиктивная диагностика вращающегося оборудования + RAG-ассистент дежурного диспетчера поверх RSP SCADA</div>
+    </div>
+  </div>
+  <div class="topbar-stats" id="topbar-stats"></div>
+</div>
+
+<div class="layout">
+
+  <div class="col-left">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Станции</h2>
+        <span class="hint">6 объектов, 40 агрегатов</span>
+      </div>
+      <div id="plant-list" class="plant-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Агрегаты</h2>
+        <div class="legend">
+          <span><i class="dot dot-ok"></i>Норма</span>
+          <span><i class="dot dot-warning"></i>Внимание</span>
+          <span><i class="dot dot-critical"></i>Критично</span>
+        </div>
+      </div>
+      <div id="fleet-grid" class="fleet-grid"></div>
+    </div>
+  </div>
+
+  <div class="col-mid">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Цифровой двойник агрегата</h2>
+        <span class="hint" id="detail-hint">Выберите агрегат слева</span>
+      </div>
+      <div id="detail-panel" class="detail-panel">
+        <div class="empty-state">Выберите агрегат в списке слева, чтобы увидеть телеметрию, оценку C++ движка и AI-модели раннего предупреждения.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>C++ telemetry_engine — потоковая обработка</h2>
+        <span class="hint">Демонстрация пропускной способности движка на синтетическом потоке</span>
+      </div>
+      <button class="btn" id="bench-btn">Прогнать бенчмарк (2 000 000 точек)</button>
+      <div id="bench-result" class="engine-result"></div>
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="panel copilot-panel">
+      <div class="panel-head">
+        <h2>RSP AI Co-Pilot — чат диспетчера</h2>
+        <span class="hint">RAG: retrieval + генерация</span>
+      </div>
+      <div id="chat-log" class="chat-log"></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" type="text" placeholder="Например: что с ГА-3 на Волжской ГЭС?" autocomplete="off">
+        <button type="submit" class="btn">Спросить</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  RSP AI Co-Pilot — технический прототип (PoC). Телеметрия синтетическая, RAG работает без вызова внешних LLM (retrieval + шаблонная генерация). Подробности — в README проекта.
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

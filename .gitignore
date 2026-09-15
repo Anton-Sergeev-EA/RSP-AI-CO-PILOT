@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.pyo
+backend/cpp/build/
+.DS_Store

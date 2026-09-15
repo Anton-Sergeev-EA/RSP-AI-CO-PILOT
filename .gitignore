@@ -3,3 +3,4 @@ __pycache__/
 *.pyo
 backend/cpp/build/
 .DS_Store
+.venv/

@@ -40,8 +40,15 @@ def load_fleet():
         return json.load(f)
 
 
-def find_unit(fleet, unit_id):
-    return next((u for u in fleet if u["unit_id"] == unit_id), None)
+def find_unit(fleet, unit_id, plant=None):
+    # unit_id сам по себе не уникален: одинаковые обозначения (ГА-1, ГА-2, ...)
+    # встречаются на разных станциях, поэтому при наличии plant им и уточняем.
+    candidates = [u for u in fleet if u["unit_id"] == unit_id]
+    if plant:
+        exact = [u for u in candidates if u["plant"] == plant]
+        if exact:
+            return exact[0]
+    return candidates[0] if candidates else None
 
 
 @app.get("/api/plants")
@@ -81,20 +88,20 @@ def list_units():
 
 
 @app.get("/api/units/{unit_id}")
-def get_unit(unit_id: str):
+def get_unit(unit_id: str, plant: str | None = None):
     fleet = load_fleet()
-    unit = find_unit(fleet, unit_id)
+    unit = find_unit(fleet, unit_id, plant)
     if not unit:
         raise HTTPException(status_code=404, detail="unit not found")
     return unit
 
 
 @app.get("/api/units/{unit_id}/realtime-replay")
-def realtime_replay(unit_id: str, up_to_day: int = 180):
+def realtime_replay(unit_id: str, up_to_day: int = 180, plant: str | None = None):
     """Прогоняет телеметрию юнита через C++ движок только до дня up_to_day —
     имитация поступления данных потоком для демонстрации работы движка."""
     fleet = load_fleet()
-    unit = find_unit(fleet, unit_id)
+    unit = find_unit(fleet, unit_id, plant)
     if not unit:
         raise HTTPException(status_code=404, detail="unit not found")
     t = unit["telemetry"]

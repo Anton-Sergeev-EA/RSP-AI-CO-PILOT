@@ -9,7 +9,13 @@ const triggerRu = {
 
 let currentFleet = [];
 let selectedUnitId = null;
+let selectedPlant = null;
 let activePlant = null;
+
+function selectFirstInFilter() {
+  const filtered = activePlant ? currentFleet.filter((u) => u.plant === activePlant) : currentFleet;
+  if (filtered.length) selectUnit(filtered[0].unit_id, filtered[0].plant);
+}
 
 async function jget(url) {
   const r = await fetch(API + url);
@@ -42,7 +48,7 @@ async function loadAll() {
   renderPlants(plantsData.plants);
   currentFleet = fleetData.units;
   renderFleetGrid(currentFleet);
-  if (currentFleet.length) selectUnit(currentFleet[0].unit_id);
+  if (currentFleet.length) selectUnit(currentFleet[0].unit_id, currentFleet[0].plant);
 }
 
 function renderTopbarStats(data) {
@@ -67,7 +73,7 @@ function renderPlants(plants) {
   wrap.innerHTML = "";
   const allRow = el("div", "plant-row" + (activePlant === null ? " active" : ""));
   allRow.appendChild(el("span", "pname", "Все станции"));
-  allRow.addEventListener("click", () => { activePlant = null; renderPlants(plants); renderFleetGrid(currentFleet); });
+  allRow.addEventListener("click", () => { activePlant = null; renderPlants(plants); renderFleetGrid(currentFleet); selectFirstInFilter(); });
   wrap.appendChild(allRow);
 
   plants.forEach((p) => {
@@ -81,7 +87,7 @@ function renderPlants(plants) {
     if (p.warning) badges.appendChild(el("span", "plant-badge warning", p.warning));
     badges.appendChild(el("span", "plant-badge ok", p.ok));
     row.appendChild(badges);
-    row.addEventListener("click", () => { activePlant = p.plant; renderPlants(plants); renderFleetGrid(currentFleet); });
+    row.addEventListener("click", () => { activePlant = p.plant; renderPlants(plants); renderFleetGrid(currentFleet); selectFirstInFilter(); });
     wrap.appendChild(row);
   });
 }
@@ -93,6 +99,7 @@ function renderFleetGrid(units) {
   filtered.forEach((u) => {
     const card = el("div", `unit-card status-${u.health_status}`);
     card.dataset.unitId = u.unit_id;
+    card.dataset.plant = u.plant;
     const top = el("div", "unit-card-top");
     top.appendChild(el("span", "unit-id", `${u.unit_id} · ${u.plant}`));
     top.appendChild(el("span", `unit-badge ${u.health_status}`, statusRu[u.health_status] || u.health_status));
@@ -101,24 +108,25 @@ function renderFleetGrid(units) {
     meta.appendChild(el("span", null, `${u.rated_capacity_mw.toFixed(0)} МВт`));
     meta.appendChild(el("span", `unit-zone zone-${u.current_vibration_zone}`, `Зона ${u.current_vibration_zone}`));
     card.appendChild(meta);
-    card.addEventListener("click", () => selectUnit(u.unit_id));
+    card.addEventListener("click", () => selectUnit(u.unit_id, u.plant));
     grid.appendChild(card);
   });
 }
 
-function markSelected(unitId) {
+function markSelected(unitId, plant) {
   document.querySelectorAll(".unit-card").forEach((c) => {
-    c.classList.toggle("selected", c.dataset.unitId === unitId);
+    c.classList.toggle("selected", c.dataset.unitId === unitId && c.dataset.plant === plant);
   });
 }
 
-async function selectUnit(unitId) {
+async function selectUnit(unitId, plant) {
   selectedUnitId = unitId;
-  markSelected(unitId);
+  selectedPlant = plant;
+  markSelected(unitId, plant);
   const panel = document.getElementById("detail-panel");
   panel.innerHTML = '<div class="empty-state small">Загрузка данных агрегата...</div>';
 
-  const unit = await jget(`/api/units/${unitId}`);
+  const unit = await jget(`/api/units/${encodeURIComponent(unitId)}?plant=${encodeURIComponent(plant)}`);
   document.getElementById("detail-hint").textContent = `${unit.unit_id} — ${unit.plant}`;
 
   panel.innerHTML = "";

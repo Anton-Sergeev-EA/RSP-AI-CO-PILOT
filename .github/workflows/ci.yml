@@ -1,0 +1,20 @@
+name: Native laboratory smoke
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  laboratory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S backend/cpp -B build -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake --build build -j2
+      - name: Synthetic normal-input smoke
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          rows = ''.join(f'{day},1,50\n' for day in range(100))
+          result = subprocess.run(['build/telemetry_engine'], input=rows, text=True,
+                                  capture_output=True, check=True, timeout=10)
+          assert json.loads(result.stdout)['status'] == 'OK'
+          PY
